@@ -9,6 +9,7 @@ use Locale::Messages qw (:libintl_h nl_putenv);
 use POSIX qw (setlocale);
 use File::Spec;
 use Encode;
+use Carp qw(carp);
 
 our $VERSION = '0.01';
 
@@ -54,11 +55,18 @@ sub register {
 
 	$app->renderer->add_helper(
 		detect_language => sub {
-			my ($self, $accept_language, $available_languages, $default_languages) = @_;
-			require I18N::AcceptLanguage;
+			my ($self, $accept_language, $available_languages, $default_language) = @_;
+			eval {
+				require I18N::AcceptLanguage;
+			};
+
+			if ($@) {
+				carp "I18N::AcceptLanguage is needed for language detect";
+				return $default_language;
+			};
 
 			my $loc_detect = I18N::AcceptLanguage->new(
-				defaultLanguage => $default_languages
+				defaultLanguage => $default_language
 			);
 
 			$loc_detect->accepts($accept_language, $available_languages);
