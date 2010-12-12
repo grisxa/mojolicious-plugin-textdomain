@@ -1,0 +1,16 @@
+syntax: regexp
+
+# vim files
+\.swp$
+\.swo$
+^tags$
+\.un~$
+\.~lock\.
+
+\.orig$
+\.bak$
+\.old$
+
+^META\.yml$
+
+^MANIFEST\.bak$
