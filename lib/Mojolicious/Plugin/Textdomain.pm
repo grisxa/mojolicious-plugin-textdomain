@@ -9,7 +9,8 @@ use Locale::Messages qw (:libintl_h nl_putenv);
 use POSIX qw (setlocale);
 use File::Spec;
 use Encode;
-use Carp qw(carp);
+use I18N::LangTags qw(implicate_supers);
+use List::Util qw(first);
 
 our $VERSION = '0.01';
 
@@ -56,22 +57,27 @@ sub register {
 	$app->renderer->add_helper(
 		detect_language => sub {
 			my ($self, $available_languages, $default_language) = @_;
-			eval {
-				require I18N::AcceptLanguage;
-			};
-
-			if ($@) {
-				carp "I18N::AcceptLanguage is needed for language detect";
-				return $default_language;
-			};
 
 			my $accept_language = $self->req->headers->accept_language;
 
-			my $loc_detect = I18N::AcceptLanguage->new(
-				defaultLanguage => $default_language
-			);
+			my @langtags = 
+				map { $_->[0] } #keep just lang tag
+				sort { $b->[1] <=> $a->[1] } # sort by priority desc
+				map { /([a-zA-Z]{1,8}(?:-[a-zA-Z]{1,8})?)\s*(?:;\s*q\s*=\s*(1|0\.[0-9]+))?/ ; [$1, $2||1] } #parse lang + priority
+				split /\s*,\s*/, $accept_language; # split be comma
+			@langtags = implicate_supers(@langtags);
 
-			$loc_detect->accepts($accept_language, $available_languages);
+			my $rv;
+			for my $lang (@langtags) {
+				if (first { $_ eq $lang } @{ $available_languages }) {
+					$rv = $lang;
+					last;
+				}
+			}
+
+			$rv = $default_language if !$rv;
+			$rv;
+
 		});
 }
 

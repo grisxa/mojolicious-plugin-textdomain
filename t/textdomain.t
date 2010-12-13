@@ -68,27 +68,18 @@ $data = decode('utf-8', $data);
 is $data, 'Проверка';
 
 
-SKIP: {
-	eval {
-		require I18N::AcceptLanguage;
-	};
-
-	skip 'I18N::AcceptLanguage is needed for this test', 8 if $@;
-
-
-	$data = $t->get_ok('/detect/uk/en,uk,ru', {'Accept-Language' => 'ru,en-us;q=0.7,en;q=0.3'})
-		->status_is(200)
-		->tx->res->body;
-	is defined $data, 1;
-	is $data, 'ru';
+$data = $t->get_ok('/detect/uk/en,uk,ru', {'Accept-Language' => 'ru,en-us;q=0.7'})
+	->status_is(200)
+	->tx->res->body;
+is defined $data, 1;
+is $data, 'ru';
 
 
-	$data = $t->get_ok('/detect/uk/en,uk,ru', {'Accept-Language' => 'pl;q=0.7,en;q=0.3'})
-		->status_is(200)
-		->tx->res->body;
-	is defined $data, 1;
-	is $data, 'en';
-}
+$data = $t->get_ok('/detect/uk/en,uk,ru', {'Accept-Language' => 'pl;q=0.7,en;q=0.3'})
+	->status_is(200)
+	->tx->res->body;
+is defined $data, 1;
+is $data, 'en';
 
 __DATA__
 
