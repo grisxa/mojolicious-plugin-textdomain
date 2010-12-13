@@ -86,3 +86,75 @@ sub register {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Mojolicious::Plugin::Textdomain - Locale::TextDomain plugin for Mojolicious
+
+=head1 SYNOPSYS
+
+code:
+
+	sub startup {
+		...
+		$self->plugin('textdomain', {
+			'available_languages' => ['en', 'ru', 'uk'],
+			'default_language'    => 'en',
+		});
+		...
+
+		my $r = $self->routes;
+		$r->route('/')->to(cb => sub {
+				my $self = shift;
+				my $lang = $self->detect_language;
+				$self->redirect_to('index', lang => $lang);
+			});
+
+		my $lang_bridge = $r->bridge('/:lang')->to(cb => sub {
+				my $self = shift;
+				$self->set_language( $self->stash('lang') );
+				1;
+			});
+		$lang_bridge->route('/')->name('index')->to('root#index');
+		...
+	}
+
+
+=head1 DESCRIPTION
+
+L<Mojolicious::Plugin::Textdomain> is L<Locale::TextDomain> plugin for Mojolicious.
+You can read advantages of L<Locale::TextDomain> over <Locale::Maketext> solution used in Mojolicious::Plugin::I18n here: L<http://rassie.org/archives/247>
+
+=head2 Options
+
+=over 4
+
+=item domain
+
+=item search_dirs
+
+=item codeset
+
+=item available_languages
+
+=item default_language
+
+=back
+
+=head2 Helpers
+
+All __ methods from L<Locale::TextDomain>, e.g. <%= __ 'Message' %>, <%= __nx 'one apple', '{count} apples', $n, count => $n %> etc.
+Plus 
+
+=over 4
+
+=item detect_language
+
+=item set_language
+
+=back
+
+
+=cut
