@@ -55,7 +55,7 @@ sub register {
 
 	$app->renderer->add_helper(
 		detect_language => sub {
-			my ($self, $accept_language, $available_languages, $default_language) = @_;
+			my ($self, $available_languages, $default_language) = @_;
 			eval {
 				require I18N::AcceptLanguage;
 			};
@@ -64,6 +64,8 @@ sub register {
 				carp "I18N::AcceptLanguage is needed for language detect";
 				return $default_language;
 			};
+
+			my $accept_language = $self->req->headers->accept_language;
 
 			my $loc_detect = I18N::AcceptLanguage->new(
 				defaultLanguage => $default_language

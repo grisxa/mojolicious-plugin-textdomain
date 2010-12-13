@@ -25,7 +25,7 @@ get '/text/:lang' => sub {
 get '/detect/:default/:available' => sub {
 	my $self = shift;
 	my @available= split(/,/, $self->stash('available'));
-	$self->render( text => $self->detect_language( scalar $self->req->headers->accept_language, \@available, $self->stash('default')) );
+	$self->render( text => $self->detect_language( \@available, $self->stash('default')) );
 };
 
 
