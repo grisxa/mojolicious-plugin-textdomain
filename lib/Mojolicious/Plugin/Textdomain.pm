@@ -6,6 +6,7 @@ use strict;
 use base 'Mojolicious::Plugin';
 
 use Locale::Messages qw (:libintl_h nl_putenv);
+use Locale::Util qw(set_locale);
 use POSIX qw (setlocale);
 use File::Spec;
 use Encode;
@@ -24,7 +25,7 @@ sub register {
 	$conf->{codeset}        ||= 'utf-8';
 	$conf->{search_dirs}    ||= [ File::Spec->join($app->home, 'i18n') ];
 
-	#Locale::Messages->select_package('gettext_pp');
+	Locale::Messages->select_package('gettext_pp');
 	#Locale::Messages::textdomain($conf{domain});
 	#Locale::Messages::bindtextdomain($conf{domain} => $conf{path});
 	#Locale::Messages::bind_textdomain_codeset($conf{domain} => $conf{codeset});
@@ -48,10 +49,11 @@ sub register {
 
 	$app->renderer->add_helper(
 		set_language => sub {
-				my ($self, $locale) = @_;
-				nl_putenv('LANGUAGE='.$locale);
-				#nl_putenv('LANG='.$lang);
-				#nl_putenv('LC_MESSAGES='.$lang);
+				my ($self, $lang) = @_;
+				#set_locale(LC_ALL, $lang, $lang, 'utf-8');
+				#nl_putenv('LC_MESSAGES=C');
+				nl_putenv('LANGUAGE='.$lang);
+				nl_putenv('LANG='.$lang);
 			});
 
 	$app->renderer->add_helper(

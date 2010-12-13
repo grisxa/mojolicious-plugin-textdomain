@@ -8,3 +8,13 @@ msgstr ""
 
 msgid "test"
 msgstr "Test"
+
+msgid "%d apple"
+msgid_plural "%d apples"
+msgstr[0] "%d apple"
+msgstr[1] "%d apples"
+
+msgid "{count} apple"
+msgid_plural "{count} apples"
+msgstr[0] "{count} apple"
+msgstr[1] "{count} apples"

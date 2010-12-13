@@ -28,9 +28,20 @@ get '/detect/:default/:available' => sub {
 	$self->render( text => $self->detect_language( \@available, $self->stash('default')) );
 };
 
+get '/num/:lang/:count' => sub {
+	my $self = shift;
+	$self->set_language($self->stash('lang'));
+	$self->render( text => $self->__n('%d apple', '%d apples', $self->stash('count')) );
+};
+
+get '/num2/:lang/:count' => sub {
+	my $self = shift;
+	$self->set_language($self->stash('lang'));
+	$self->render( text => $self->__nx('{count} apple', '{count} apples', $self->stash('count'), 'count' => $self->stash('count')) );
+};
 
 # Tests
-use Test::More tests => 24;
+use Test::More tests => 56;
 use Test::Mojo;
 
 my $t = Test::Mojo->new();
@@ -81,6 +92,65 @@ $data = $t->get_ok('/detect/uk/en,uk,ru', {'Accept-Language' => 'pl;q=0.7,en;q=0
 is defined $data, 1;
 is $data, 'en';
 
+
+
+$data = $t->get_ok('/num/ru/1')
+	->status_is(200)
+	->tx->res->body;
+is defined $data, 1;
+$data = decode('utf-8', $data);
+is $data, '%d яблоко';
+
+$data = $t->get_ok('/num/ru/2')
+	->status_is(200)
+	->tx->res->body;
+is defined $data, 1;
+$data = decode('utf-8', $data);
+is $data, '%d яблока';
+
+$data = $t->get_ok('/num/ru/5')
+	->status_is(200)
+	->tx->res->body;
+is defined $data, 1;
+$data = decode('utf-8', $data);
+is $data, '%d яблок';
+
+
+$data = $t->get_ok('/num/en/1')
+	->status_is(200)
+	->tx->res->body;
+is defined $data, 1;
+$data = decode('utf-8', $data);
+is $data, '%d apple';
+
+$data = $t->get_ok('/num/en/2')
+	->status_is(200)
+	->tx->res->body;
+is defined $data, 1;
+$data = decode('utf-8', $data);
+is $data, '%d apples';
+
+
+$data = $t->get_ok('/num2/ru/1')
+	->status_is(200)
+	->tx->res->body;
+is defined $data, 1;
+$data = decode('utf-8', $data);
+is $data, '1 яблоко';
+
+$data = $t->get_ok('/num2/ru/2')
+	->status_is(200)
+	->tx->res->body;
+is defined $data, 1;
+$data = decode('utf-8', $data);
+is $data, '2 яблока';
+
+$data = $t->get_ok('/num2/ru/5')
+	->status_is(200)
+	->tx->res->body;
+is defined $data, 1;
+$data = decode('utf-8', $data);
+is $data, '5 яблок';
 __DATA__
 
 @@ t.html.ep
