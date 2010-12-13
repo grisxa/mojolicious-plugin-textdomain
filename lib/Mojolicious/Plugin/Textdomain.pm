@@ -24,7 +24,7 @@ sub register {
 	$conf->{codeset}        ||= 'utf-8';
 	$conf->{search_dirs}    ||= [ File::Spec->join($app->home, 'i18n') ];
 
-	Locale::Messages->select_package('gettext_pp');
+	#Locale::Messages->select_package('gettext_pp');
 	#Locale::Messages::textdomain($conf{domain});
 	#Locale::Messages::bindtextdomain($conf{domain} => $conf{path});
 	#Locale::Messages::bind_textdomain_codeset($conf{domain} => $conf{codeset});
@@ -58,6 +58,8 @@ sub register {
 		detect_language => sub {
 			my ($self, $available_languages, $default_language) = @_;
 
+			$available_languages ||= $conf->{'available_languages'};
+			$default_language    ||= $conf->{'default_language'};
 			my $accept_language = $self->req->headers->accept_language;
 
 			my @langtags = 
