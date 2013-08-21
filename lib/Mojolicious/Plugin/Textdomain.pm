@@ -1,13 +1,14 @@
 package Mojolicious::Plugin::Textdomain;
 
+# (C) 2010 Anatoliy Lapitskiy <nuclon@cpan.org>
+
 use warnings;
 use strict;
 
 use base 'Mojolicious::Plugin';
 
 use Locale::Messages qw (:libintl_h nl_putenv);
-use Locale::Util qw(set_locale);
-use POSIX qw (setlocale);
+use Locale::Util qw(parse_http_accept_language);
 use File::Spec;
 use Encode;
 use I18N::LangTags qw(implicate_supers);
@@ -22,21 +23,20 @@ sub register {
 	$conf ||= {};
 
 	# Default values
+	$conf->{domain}         ||= 'messages';
 	$conf->{codeset}        ||= 'utf-8';
 	$conf->{search_dirs}    ||= [ File::Spec->join($app->home, 'i18n') ];
 
 	Locale::Messages->select_package('gettext_pp');
-	#Locale::Messages::textdomain($conf{domain});
-	#Locale::Messages::bindtextdomain($conf{domain} => $conf{path});
-	#Locale::Messages::bind_textdomain_codeset($conf{domain} => $conf{codeset});
-	
+
 	require Locale::TextDomain;
 
+	# load translations from dirs for the text domain 
 	Locale::TextDomain->import($conf->{domain}, @{ $conf->{search_dirs} });
 
 	{
 		no strict 'refs';
-		for my $method ( qw( __ __x __n __nx __xn __p __px __np __npx) ) {
+		for my $method ( qw( __ __x __n __nx __xn __p __px __np __npx N__) ) {
 			$app->renderer->add_helper(
 				$method => sub {
 						my $self = shift;
@@ -47,11 +47,10 @@ sub register {
 		}
 	}
 
+	# replace the locale
 	$app->renderer->add_helper(
 		set_language => sub {
 				my ($self, $lang) = @_;
-				#set_locale(LC_ALL, $lang, $lang, 'utf-8');
-				#nl_putenv('LC_MESSAGES=C');
 				nl_putenv('LANGUAGE='.$lang);
 				nl_putenv('LANG='.$lang);
 			});
@@ -64,11 +63,7 @@ sub register {
 			$default_language    ||= $conf->{'default_language'};
 			my $accept_language = $self->req->headers->accept_language;
 
-			my @langtags = 
-				map { $_->[0] } #keep just lang tag
-				sort { $b->[1] <=> $a->[1] } # sort by priority desc
-				map { /([a-zA-Z]{1,8}(?:-[a-zA-Z]{1,8})?)\s*(?:;\s*q\s*=\s*(1|0\.[0-9]+))?/ ; [$1, $2||1] } #parse lang + priority
-				split /\s*,\s*/, $accept_language; # split be comma
+			my @langtags = parse_http_accept_language $accept_language;
 			@langtags = implicate_supers(@langtags);
 
 			my $rv;
