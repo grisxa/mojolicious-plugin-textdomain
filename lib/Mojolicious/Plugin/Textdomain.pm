@@ -11,8 +11,8 @@ use Locale::Messages qw (:libintl_h nl_putenv);
 use Locale::Util qw(parse_http_accept_language);
 use File::Spec;
 use Encode;
+use I18N::LangTags qw(implicate_supers);
 use List::Util qw(first);
-use List::MoreUtils qw(uniq);
 
 our $VERSION = '0.01';
 
@@ -64,7 +64,7 @@ sub register {
 			my $accept_language = $self->req->headers->accept_language;
 
 			my @langtags = parse_http_accept_language $accept_language;
-			@langtags = uniq map { @_ = split /-/, $_, 2; ($_, $_[0]) } @langtags;
+			@langtags = implicate_supers(@langtags);
 
 			my $rv;
 			for my $lang (@langtags) {
