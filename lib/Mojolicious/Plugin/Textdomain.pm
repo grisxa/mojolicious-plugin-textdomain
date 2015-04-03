@@ -51,6 +51,7 @@ sub register {
 	$app->renderer->add_helper(
 		set_language => sub {
 				my ($self, $lang) = @_;
+				return unless defined $lang;
 				nl_putenv('LANGUAGE='.$lang);
 				nl_putenv('LANG='.$lang);
 			});
