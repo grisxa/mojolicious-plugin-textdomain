@@ -14,7 +14,7 @@ use Encode;
 use I18N::LangTags qw(implicate_supers);
 use List::Util qw(first);
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 sub register {
 	my ($self, $app, $conf) = @_;
@@ -41,8 +41,14 @@ sub register {
 				$method => sub {
 						my $self = shift;
 
-						# return perl-strings
-						decode($conf->{codeset}, &$method(@_));
+                        # encode all the arguments to the "codeset" first
+                        # with a copy fallback
+                        my @args = map {
+                            encode( $conf->{codeset}, $_, sub { shift } )
+                        } @_;
+
+                        # return perl-strings
+                        decode( $conf->{codeset}, &$method(@args) );
 					});
 		}
 	}
